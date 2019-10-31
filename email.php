@@ -2,24 +2,40 @@
 
 require 'vendor/autoload.php';
 
+use SendGrid\Mail\Personalization;
+use SendGrid\Mail\To;
+
 // Load our `.env` variables
 $dotenv = Dotenv\Dotenv::create(__DIR__);
 $dotenv->load();
 
+// Define the 
+$email_addresses = [
+    'second@recipient.com',
+];
+
 // Declare a new SendGrid Mail object
 $email = new \SendGrid\Mail\Mail();
 
-// Set the email parameters
+// 
 $email->setFrom("your@email.com", "Your Name");
-$email->setSubject("Sending with SendGrid is Fun");
+$email->setSubject("Sample email to Twilio");
+$email->addTo("first@recipient.com", "First Recipient");
 
-$email->addTo("their@email.com", "Their Name");
-$email->addContent("text/plain", "and easy to do anywhere, even with PHP");
-$email->addContent("text/html", "and easy to do anywhere, even with PHP");
+foreach ( $email_addresses as $email_address ) {
+
+    $personalization = new Personalization();
+    $personalization->addTo( new To( $email_address ) );
+
+    $email->addPersonalization( $personalization );
+}
+
+
+$email->addContent("text/plain", "Sending bulk emails is easy with SendGrid");
+$email->addContent("text/html", "Sending bulk emails is easy with SendGrid");
 
 $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
 
-// Send the email
 try {
     $response = $sendgrid->send($email);
     print $response->statusCode() . "\n";
